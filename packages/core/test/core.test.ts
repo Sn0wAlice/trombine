@@ -9,7 +9,7 @@ const FIXED = [
 ];
 const MANY = Array.from({ length: 1000 }, (_, i) => `seed-${i}`);
 const doodle = themes.doodle!;
-const THEMES = ['doodle', 'corpo'];
+const THEMES = ['doodle', 'corpo', 'cyberpunk'];
 
 describe('determinism', () => {
   it('matches the snapshot for 20 fixed seeds', () => {
@@ -20,6 +20,10 @@ describe('determinism', () => {
 
   it('matches the snapshot for 20 fixed seeds (corpo)', () => {
     expect(FIXED.map((s) => createAvatar(s, { theme: 'corpo' }))).toMatchSnapshot();
+  });
+
+  it('matches the snapshot for 20 fixed seeds (cyberpunk)', () => {
+    expect(FIXED.map((s) => createAvatar(s, { theme: 'cyberpunk' }))).toMatchSnapshot();
   });
 
   it('never uses Math.random in core', () => {
@@ -80,6 +84,18 @@ describe.each(THEMES)('output (%s)', (theme) => {
           ys = [y, y + h];
         }
         for (const v of [...xs, ...ys]) expect(v >= 0 && v <= 100, `${tag} ${attrs}`).toBe(true);
+      }
+    }
+  });
+
+  it('only references ids it defines, unique per seed', () => {
+    const seen = new Map<string, string>();
+    for (const [i, svg] of outputs.entries()) {
+      const ids = [...svg.matchAll(/\bid="([^"]+)"/g)].map((m) => m[1]!);
+      for (const [, ref] of svg.matchAll(/url\(#([^)]+)\)/g)) expect(ids).toContain(ref);
+      for (const id of ids) {
+        expect(seen.get(id) ?? MANY[i], id).toBe(MANY[i]);
+        seen.set(id, MANY[i]!);
       }
     }
   });

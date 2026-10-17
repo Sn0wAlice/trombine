@@ -3,10 +3,10 @@
 Deterministic avatar SVGs from a seed string. Same seed, same avatar, on every runtime
 (browser, Node, Deno, Cloudflare Workers).
 
-| `doodle` (default, alias `classik`) | `corpo` |
-| --- | --- |
-| Hand-drawn pen faces, black on white | Flat, friendly busts for pro tools (CRM, chat, ticketing) |
-| ![doodle preview](docs/doodle-preview.png) | ![corpo preview](docs/corpo-preview.png) |
+| `doodle` (default, alias `classik`) | `corpo` | `cyberpunk` |
+| --- | --- | --- |
+| Hand-drawn pen faces, black on white | Flat, friendly busts for pro tools (CRM, chat, ticketing) | Night city, neon rim light, visors and implants |
+| ![doodle preview](docs/doodle-preview.png) | ![corpo preview](docs/corpo-preview.png) | ![cyberpunk preview](docs/cyberpunk-preview.png) |
 
 | Package | What |
 | --- | --- |
@@ -24,7 +24,7 @@ const small = createAvatar('alice', { theme: 'doodle', size: 64 });
 const yellow = createAvatar('alice', { bg: 'ffcc00' }); // custom background, "#ffcc00" works too
 ```
 
-Themes: `doodle` (default, also available as `classik`) and `corpo`.
+Themes: `doodle` (default, also available as `classik`), `corpo` and `cyberpunk`.
 
 Output is a standalone SVG with `viewBox="0 0 100 100"` and `width`/`height` set to `size`.
 Unknown theme, non-positive-integer size or a `bg` that is not 6 hex digits throws.
@@ -111,6 +111,8 @@ Rules of thumb:
   as input, so they always enclose the eyes. Pass slot results forward instead of guessing.
 - **Round your numbers** (see `pt()` in [`themes/doodle/util.ts`](packages/core/src/themes/doodle/util.ts))
   to keep output short and identical across engines.
+- **Suffix `id`s per seed** if you use gradients or filters (see `cyberpunk/palette.ts`): several
+  avatars inlined in one page would otherwise share the first one's defs. The tests check it.
 - **Stay inside the viewBox.** The test suite checks every path, circle and rect of 1000 seeds.
   Use absolute path commands only (`M L Q C Z`) so the check can read them.
 
