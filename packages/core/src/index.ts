@@ -5,6 +5,8 @@ export { createRng, type Rng };
 
 export interface RenderOptions {
   size: number;
+  /** "#rrggbb", already validated. Undefined = the theme's own background. */
+  background?: string;
 }
 
 export interface Theme {
@@ -14,17 +16,28 @@ export interface Theme {
   render(rng: Rng, opts: RenderOptions): string;
 }
 
-export const themes: Record<string, Theme> = { doodle };
+// "classik" is an alias of the default doodle theme.
+export const themes: Record<string, Theme> = { doodle, classik: doodle };
 
-export function createAvatar(seed: string, opts: { theme?: string; size?: number } = {}): string {
-  const { theme = 'doodle', size = 256 } = opts;
+export interface AvatarOptions {
+  theme?: string;
+  size?: number;
+  /** Background color as 6 hex digits, with or without "#". */
+  bg?: string;
+}
+
+export function createAvatar(seed: string, opts: AvatarOptions = {}): string {
+  const { theme = 'doodle', size = 256, bg } = opts;
   if (!Object.hasOwn(themes, theme)) throw new Error(`Unknown theme "${theme}"`);
   if (!Number.isInteger(size) || size < 1) throw new Error(`Invalid size "${size}"`);
+  // Validated here because it is written into the SVG markup.
+  if (bg !== undefined && !/^#?[0-9a-fA-F]{6}$/.test(bg)) throw new Error(`Invalid bg "${bg}", expected 6 hex digits`);
+  const background = bg && `#${bg.replace('#', '').toLowerCase()}`;
   const t = themes[theme]!;
   const v = t.viewBox;
   return (
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${v} ${v}" width="${size}" height="${size}">` +
-    t.render(createRng(seed), { size }) +
+    t.render(createRng(seed), { size, background }) +
     '</svg>'
   );
 }

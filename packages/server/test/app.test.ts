@@ -12,11 +12,19 @@ describe('server', () => {
     expect(await res.text()).toContain('width="64"');
   });
 
+  it('serves the explorer', async () => {
+    const res = await app.request('/explorer');
+    expect(res.status).toBe(200);
+    expect(await res.text()).toContain('"key":"classik","alias":"doodle"');
+    expect((await app.request('/')).headers.get('location')).toBe('/explorer');
+  });
+
   it('validates input', async () => {
-    for (const url of ['/a.svg?size=8', '/a.svg?size=2000', '/a.svg?size=abc', '/a.svg?theme=constructor', `/${'x'.repeat(257)}.svg`]) {
+    for (const url of ['/a.svg?size=8', '/a.svg?size=2000', '/a.svg?size=abc', '/a.svg?theme=constructor', '/a.svg?bg=red', '/a.svg?bg=%23ff0000%22', `/${'x'.repeat(257)}.svg`]) {
       expect((await app.request(url)).status, url).toBe(400);
     }
     expect((await app.request('/a.gif')).status).toBe(404);
+    expect((await app.request('/a.svg?theme=classik&bg=ffcc00')).status).toBe(200);
   });
 
   it('answers 501 for png without a renderer, 200 with one', async () => {

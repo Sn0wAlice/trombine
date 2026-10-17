@@ -11,13 +11,13 @@ import { nose } from './nose.js';
 export const doodle: Theme = {
   name: 'doodle',
   viewBox: 100,
-  render(rng) {
+  render(rng, opts) {
     // Each slot gets its own sub-stream, so adding a slot never changes the others.
     const h = head(rng.fork('head'));
     const e = eyes(rng.fork('eyes'), h);
     const g = glasses(rng.fork('glasses'), e);
     return (
-      '<rect width="100" height="100" fill="#fff"/>' +
+      `<rect width="100" height="100" fill="${opts.background ?? '#fff'}"/>` +
       '<g fill="none" stroke="#111" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">' +
       h.svg +
       hair(rng.fork('hair'), h) +

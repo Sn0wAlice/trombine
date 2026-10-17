@@ -82,5 +82,17 @@ describe('output', () => {
     expect(() => createAvatar('a', { theme: 'nope' })).toThrow();
     expect(() => createAvatar('a', { theme: 'toString' })).toThrow();
     expect(() => createAvatar('a', { size: 0 })).toThrow();
+    for (const bg of ['', 'fff', 'zzzzzz', '"/><script>', '#ff00001']) expect(() => createAvatar('a', { bg }), bg).toThrow();
+  });
+
+  it('serves doodle as "classik" too', () => {
+    expect(createAvatar('a', { theme: 'classik' })).toBe(createAvatar('a'));
+  });
+
+  it('only changes the background with bg', () => {
+    const svg = createAvatar('a', { bg: 'FFCC00' });
+    expect(svg).toContain('fill="#ffcc00"');
+    expect(createAvatar('a', { bg: '#ffcc00' })).toBe(svg);
+    expect(svg.replace('#ffcc00', '#fff')).toBe(createAvatar('a'));
   });
 });
