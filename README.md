@@ -54,6 +54,24 @@ pnpm build && pnpm --filter @trombine/server start   # Node, PORT defaults to 30
 cd packages/server && npx wrangler deploy             # Cloudflare Workers (src/worker.ts)
 ```
 
+### Docker
+
+The image runs the Node server (SVG, PNG and `/explorer`) as a non-root user, with a healthcheck.
+
+```bash
+docker run -p 3000:3000 ghcr.io/sn0walice/trombine        # then open http://localhost:3000
+docker build -t trombine . && docker run -p 3000:3000 trombine   # from source
+```
+
+Set `PORT` to listen elsewhere inside the container.
+
+## CI
+
+[`.github/workflows/ci.yml`](.github/workflows/ci.yml) installs, builds and tests on every push and pull
+request, then builds the Docker image for `linux/amd64` and `linux/arm64`. Pull requests only check that
+the image builds. Pushes to `main` publish `ghcr.io/sn0walice/trombine:latest` and `:sha-<commit>`, and a
+`v1.2.3` tag also publishes `:1.2.3` and `:1.2`.
+
 ## Development
 
 ```bash
