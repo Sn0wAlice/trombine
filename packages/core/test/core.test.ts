@@ -65,39 +65,40 @@ describe.each(THEMES)('output (%s)', (theme) => {
 
   it('keeps every element inside the viewBox', () => {
     const attr = (attrs: string, name: string) => Number(new RegExp(`\\b${name}="([^"]*)"`).exec(attrs)?.[1] ?? 0);
+    // Collect offenders and assert once: one expect() per coordinate made this test time out on CI.
+    const outside: string[] = [];
     for (const svg of outputs) {
       for (const [, tag, attrs = ''] of svg.matchAll(/<(path|circle|rect)\b([^>]*)>/g)) {
-        let xs: number[];
-        let ys: number[];
+        let coords: number[];
         if (tag === 'path') {
-          // All path commands are absolute, so every number pair is a point or control point.
-          const nums = /\bd="([^"]*)"/.exec(attrs)![1]!.match(/-?\d+(\.\d+)?/g)!.map(Number);
-          xs = nums.filter((_, i) => i % 2 === 0);
-          ys = nums.filter((_, i) => i % 2 === 1);
+          // All path commands are absolute, so every number is a point or control point coordinate.
+          coords = /\bd="([^"]*)"/.exec(attrs)![1]!.match(/-?\d+(\.\d+)?/g)!.map(Number);
         } else if (tag === 'circle') {
           const [cx, cy, r] = ['cx', 'cy', 'r'].map((n) => attr(attrs, n)) as [number, number, number];
-          xs = [cx - r, cx + r];
-          ys = [cy - r, cy + r];
+          coords = [cx - r, cx + r, cy - r, cy + r];
         } else {
           const [x, y, w, h] = ['x', 'y', 'width', 'height'].map((n) => attr(attrs, n)) as [number, number, number, number];
-          xs = [x, x + w];
-          ys = [y, y + h];
+          coords = [x, x + w, y, y + h];
         }
-        for (const v of [...xs, ...ys]) expect(v >= 0 && v <= 100, `${tag} ${attrs}`).toBe(true);
+        if (coords.some((v) => v < 0 || v > 100)) outside.push(`${tag} ${attrs}`);
       }
     }
+    expect(outside).toEqual([]);
   });
 
   it('only references ids it defines, unique per seed', () => {
-    const seen = new Map<string, string>();
+    const owner = new Map<string, string>();
+    const problems: string[] = [];
     for (const [i, svg] of outputs.entries()) {
-      const ids = [...svg.matchAll(/\bid="([^"]+)"/g)].map((m) => m[1]!);
-      for (const [, ref] of svg.matchAll(/url\(#([^)]+)\)/g)) expect(ids).toContain(ref);
+      const seed = MANY[i]!;
+      const ids = new Set([...svg.matchAll(/\bid="([^"]+)"/g)].map((m) => m[1]!));
+      for (const [, ref] of svg.matchAll(/url\(#([^)]+)\)/g)) if (!ids.has(ref!)) problems.push(`${seed}: missing #${ref}`);
       for (const id of ids) {
-        expect(seen.get(id) ?? MANY[i], id).toBe(MANY[i]);
-        seen.set(id, MANY[i]!);
+        if ((owner.get(id) ?? seed) !== seed) problems.push(`${seed}: id ${id} also used by ${owner.get(id)}`);
+        owner.set(id, seed);
       }
     }
+    expect(problems).toEqual([]);
   });
 
   it('honors bg', () => {
