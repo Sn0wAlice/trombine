@@ -1,0 +1,21 @@
+{
+  "name": "trombine-monorepo",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "pnpm -r build && tsc -p tools",
+    "test": "vitest run",
+    "contact-sheet": "node tools/contact-sheet.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "fast-xml-parser": "^5.11.2",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.5"
+  },
+  "dependencies": {
+    "@resvg/resvg-js": "^2.6.2",
+    "@trombine/core": "workspace:*"
+  },
+  "packageManager": "pnpm@10.34.7"
+}
