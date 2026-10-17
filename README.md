@@ -3,7 +3,10 @@
 Deterministic avatar SVGs from a seed string. Same seed, same avatar, on every runtime
 (browser, Node, Deno, Cloudflare Workers).
 
-![doodle preview](docs/doodle-preview.png)
+| `doodle` (default, alias `classik`) | `corpo` |
+| --- | --- |
+| Hand-drawn pen faces, black on white | Flat, friendly busts for pro tools (CRM, chat, ticketing) |
+| ![doodle preview](docs/doodle-preview.png) | ![corpo preview](docs/corpo-preview.png) |
 
 | Package | What |
 | --- | --- |
@@ -21,7 +24,7 @@ const small = createAvatar('alice', { theme: 'doodle', size: 64 });
 const yellow = createAvatar('alice', { bg: 'ffcc00' }); // custom background, "#ffcc00" works too
 ```
 
-Themes: `doodle` (default), also available as `classik`.
+Themes: `doodle` (default, also available as `classik`) and `corpo`.
 
 Output is a standalone SVG with `viewBox="0 0 100 100"` and `width`/`height` set to `size`.
 Unknown theme, non-positive-integer size or a `bg` that is not 6 hex digits throws.

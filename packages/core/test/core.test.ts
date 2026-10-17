@@ -9,12 +9,17 @@ const FIXED = [
 ];
 const MANY = Array.from({ length: 1000 }, (_, i) => `seed-${i}`);
 const doodle = themes.doodle!;
+const THEMES = ['doodle', 'corpo'];
 
 describe('determinism', () => {
   it('matches the snapshot for 20 fixed seeds', () => {
     const out = FIXED.map((s) => createAvatar(s));
     expect(FIXED.map((s) => createAvatar(s))).toEqual(out);
     expect(out).toMatchSnapshot();
+  });
+
+  it('matches the snapshot for 20 fixed seeds (corpo)', () => {
+    expect(FIXED.map((s) => createAvatar(s, { theme: 'corpo' }))).toMatchSnapshot();
   });
 
   it('never uses Math.random in core', () => {
@@ -25,26 +30,27 @@ describe('determinism', () => {
   });
 });
 
-describe('stability', () => {
+describe.each(THEMES)('stability (%s)', (name) => {
   it('adding a slot does not change existing slots', () => {
+    const theme = themes[name]!;
     const withDummy: Theme = {
-      ...doodle,
+      ...theme,
       render(rng, opts) {
         // A new slot, plus stray draws on the parent stream.
         const r = rng.fork('dummy');
         for (let i = 0; i < 50; i++) r.next(), rng.next();
-        return doodle.render(rng, opts) + '<circle cx="50" cy="50" r="1"/>';
+        return theme.render(rng, opts) + '<circle cx="50" cy="50" r="1"/>';
       },
     };
     for (const s of MANY) {
-      const base = doodle.render(createRng(s), { size: 100 });
+      const base = theme.render(createRng(s), { size: 100 });
       expect(withDummy.render(createRng(s), { size: 100 }).startsWith(base)).toBe(true);
     }
   });
 });
 
-describe('output', () => {
-  const outputs = MANY.map((s) => createAvatar(s));
+describe.each(THEMES)('output (%s)', (theme) => {
+  const outputs = MANY.map((s) => createAvatar(s, { theme }));
 
   it('is valid XML with a 100x100 viewBox', () => {
     for (const svg of outputs) {
@@ -78,6 +84,12 @@ describe('output', () => {
     }
   });
 
+  it('honors bg', () => {
+    expect(createAvatar('a', { theme, bg: '123abc' })).toContain('<rect width="100" height="100" fill="#123abc"/>');
+  });
+});
+
+describe('options', () => {
   it('rejects unknown themes and bad sizes', () => {
     expect(() => createAvatar('a', { theme: 'nope' })).toThrow();
     expect(() => createAvatar('a', { theme: 'toString' })).toThrow();

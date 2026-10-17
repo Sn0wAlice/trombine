@@ -1,4 +1,5 @@
 import { createRng, type Rng } from './rng.js';
+import { corpo } from './themes/corpo/index.js';
 import { doodle } from './themes/doodle/index.js';
 
 export { createRng, type Rng };
@@ -17,7 +18,7 @@ export interface Theme {
 }
 
 // "classik" is an alias of the default doodle theme.
-export const themes: Record<string, Theme> = { doodle, classik: doodle };
+export const themes: Record<string, Theme> = { doodle, classik: doodle, corpo };
 
 export interface AvatarOptions {
   theme?: string;
